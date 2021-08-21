@@ -17,6 +17,7 @@ namespace DualityPlaydate
         private readonly Entity _snowman;
         private readonly Entity _runner;
         private readonly ISystem<SpriteBatch> _drawSystem;
+        private readonly ISystem<float> _updateSystem;
 
         private SpriteBatch _batch;
         private SpriteBatch Batch
@@ -49,9 +50,14 @@ namespace DualityPlaydate
             _world = new World();
             _textureResourceManager = new TextureResourceManager(GraphicsDevice, new TextureLoader(Content));
             _snowman = _world.CreateEntity();
+            _runner = _world.CreateEntity();
 
             _drawSystem = new SequentialSystem<SpriteBatch>(
                 new DrawSystem(_world));
+
+            _updateSystem = new SequentialSystem<float>(
+                new PlayerControlledSystem(_world),
+                new MovementSystem(_world));
         }
 
         protected override void Initialize()
@@ -61,6 +67,17 @@ namespace DualityPlaydate
                 0,
                 1));
             _snowman.Set(new DrawInfo(null, Color.Plum, new Rectangle(0, 128, 256, 256), new Vector2(128, 192)));
+
+            _runner.Set(new Transform(
+                new Vector2(200, 200),
+                0,
+                1));
+            _runner.Set(new DrawInfo(null, Color.White, new Rectangle(0, 0, 128, 128), Vector2.Zero));
+            _runner.Set(new PlayerControlled{
+                PadIndex = PlayerIndex.One
+                });
+            _runner.Set(new Inputs());
+            _runner.Set(new Movement(10, 5, 0.9f));
 
             base.Initialize();
         }
@@ -72,12 +89,15 @@ namespace DualityPlaydate
             _textureResourceManager.Manage(_world);
 
             _snowman.Set(new ManagedResource<string, Texture2D>("snow_assets"));
+            _runner.Set(new ManagedResource<string, Texture2D>("run_cycle"));
 
             base.LoadContent();
         }
 
         protected override void Update(GameTime gameTime)
         {
+            _updateSystem.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
+
             base.Update(gameTime);
         }
 
