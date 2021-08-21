@@ -60,8 +60,10 @@ namespace DualityPlaydate
             _updateSystem = new SequentialSystem<float>(
                 new PlayerControlledSystem(_world),
                 new MovementSystem(_world),
+                new FollowCameraSystem(_world),
                 new RunnerAnimationSystem(_world),
                 new AnimationSystem(_world));
+
         }
 
         protected override void Initialize()
@@ -84,6 +86,7 @@ namespace DualityPlaydate
             _runner.Set(new Inputs());
             _runner.Set(new Movement(10, 5, 0.9f));
             _runner.Set(new RunnerState());
+            _runner.Set(new FollowCamera(_deviceManager.PreferredBackBufferWidth, _deviceManager.PreferredBackBufferHeight));
 
             base.Initialize();
         }
