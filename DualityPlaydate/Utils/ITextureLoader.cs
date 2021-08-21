@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xna.Framework.Graphics;
 
-namespace DualityPlaydate
+namespace DualityPlaydate.Utils
 {
     public interface ITextureLoader
     {

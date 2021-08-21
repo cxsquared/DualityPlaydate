@@ -19,8 +19,6 @@ namespace DualityPlaydate.System
             batch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend);
         }
 
-
-
         protected override void Update(SpriteBatch batch, in Entity entity)
         {
             ref var trans = ref entity.Get<Transform>();
@@ -33,7 +31,7 @@ namespace DualityPlaydate.System
                 trans.Rotation,
                 drawInfo.SourceOrigin,
                 trans.Scale,
-                SpriteEffects.None,
+                drawInfo.Flip ? SpriteEffects.FlipHorizontally : SpriteEffects.None,
                 drawInfo.ZIndex);
         }
 

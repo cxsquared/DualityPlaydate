@@ -3,6 +3,7 @@ using DefaultEcs.Resource;
 using DefaultEcs.System;
 using DualityPlaydate.Component;
 using DualityPlaydate.System;
+using DualityPlaydate.Utils;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
@@ -22,7 +23,8 @@ namespace DualityPlaydate
         private SpriteBatch _batch;
         private SpriteBatch Batch
         {
-            get {
+            get
+            {
                 return _batch;
             }
             set
@@ -57,7 +59,9 @@ namespace DualityPlaydate
 
             _updateSystem = new SequentialSystem<float>(
                 new PlayerControlledSystem(_world),
-                new MovementSystem(_world));
+                new MovementSystem(_world),
+                new RunnerAnimationSystem(_world),
+                new AnimationSystem(_world));
         }
 
         protected override void Initialize()
@@ -73,11 +77,13 @@ namespace DualityPlaydate
                 0,
                 1));
             _runner.Set(new DrawInfo(null, Color.White, new Rectangle(0, 0, 128, 128), Vector2.Zero));
-            _runner.Set(new PlayerControlled{
+            _runner.Set(new PlayerControlled
+            {
                 PadIndex = PlayerIndex.One
-                });
+            });
             _runner.Set(new Inputs());
             _runner.Set(new Movement(10, 5, 0.9f));
+            _runner.Set(new RunnerState());
 
             base.Initialize();
         }

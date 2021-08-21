@@ -33,7 +33,7 @@ namespace DualityPlaydate.System
 
         static bool IsLeftPressed(KeyboardState keyState, GamePadState gamePadState)
         {
-            var keysPressed = keyState.IsKeyDown(Keys.D) || keyState.IsKeyDown(Keys.Left);
+            var keysPressed = keyState.IsKeyDown(Keys.A) || keyState.IsKeyDown(Keys.Left);
             var padPressed = false;
             if (gamePadState.IsConnected)
             {
@@ -45,7 +45,7 @@ namespace DualityPlaydate.System
 
         static bool IsRightPressed(KeyboardState keyState, GamePadState gamePadState)
         {
-            var keysPressed = keyState.IsKeyDown(Keys.A) || keyState.IsKeyDown(Keys.Right);
+            var keysPressed = keyState.IsKeyDown(Keys.D) || keyState.IsKeyDown(Keys.Right);
             var padPressed = false;
             if (gamePadState.IsConnected)
             {

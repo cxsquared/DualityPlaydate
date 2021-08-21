@@ -1,13 +1,9 @@
 ﻿using DefaultEcs;
 using DefaultEcs.Resource;
 using DualityPlaydate.Component;
-using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace DualityPlaydate
+namespace DualityPlaydate.Utils
 {
     // TInfo is string, the name of the texture and TResource is Texture2D
     public sealed class TextureResourceManager : AResourceManager<string, Texture2D>
