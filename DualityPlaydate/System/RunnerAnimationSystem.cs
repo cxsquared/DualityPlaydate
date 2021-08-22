@@ -6,7 +6,7 @@ using System;
 
 namespace DualityPlaydate.System
 {
-    [With(typeof(RunnerState), typeof(Movement))]
+    [With(typeof(RunnerState), typeof(SideScrollingMovement))]
     class RunnerAnimationSystem : AEntitySetSystem<float>
     {
         Animation Idle = new()
@@ -32,7 +32,7 @@ namespace DualityPlaydate.System
         protected override void Update(float frameDelta, in Entity entity)
         {
             ref var state = ref entity.Get<RunnerState>();
-            ref var movement = ref entity.Get<Movement>();
+            ref var movement = ref entity.Get<SideScrollingMovement>();
 
             if (movement.Velocity.X == 0 && state.IsMoving)
             {

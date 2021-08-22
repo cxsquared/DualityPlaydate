@@ -2,14 +2,14 @@
 
 namespace DualityPlaydate.Component
 {
-    public struct Movement
+    public struct SideScrollingMovement
     {
         public Vector2 Velocity;
         public float Speed;
         public float MaxSpeed;
         public float Friction;
 
-        public Movement(float speed, float max, float friction)
+        public SideScrollingMovement(float speed, float max, float friction)
         {
             Speed = speed;
             MaxSpeed = max;

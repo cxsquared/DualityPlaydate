@@ -5,18 +5,18 @@ using System;
 
 namespace DualityPlaydate.System
 {
-    [With(typeof(Transform), typeof(Movement), typeof(Inputs))]
-    class MovementSystem : AEntitySetSystem<float>
+    [With(typeof(Transform), typeof(SideScrollingMovement), typeof(Inputs))]
+    class SideScrollingMovementSystem : AEntitySetSystem<float>
     {
-        public MovementSystem(World world)
-            : base (world)
+        public SideScrollingMovementSystem(World world)
+            : base(world)
         {
         }
 
         protected override void Update(float frameDelta, in Entity entity)
         {
             ref var trans = ref entity.Get<Transform>();
-            ref var movement = ref entity.Get<Movement>();
+            ref var movement = ref entity.Get<SideScrollingMovement>();
             ref readonly var input = ref entity.Get<Inputs>();
 
             if (!HasMovementInput(in input))
@@ -34,7 +34,7 @@ namespace DualityPlaydate.System
             return input.Right || input.Left;
         }
 
-        static void ApplyFriction(ref Movement movement, float frameDelta)
+        static void ApplyFriction(ref SideScrollingMovement movement, float frameDelta)
         {
             movement.Velocity.X *= movement.Friction * frameDelta;
 
@@ -42,7 +42,7 @@ namespace DualityPlaydate.System
                 movement.Velocity.X = 0;
         }
 
-        static void ApplyVelocity(ref Movement movement, in Inputs input, float frameDelta)
+        static void ApplyVelocity(ref SideScrollingMovement movement, in Inputs input, float frameDelta)
         {
             if (input.Right && input.Left)
                 return;
@@ -62,7 +62,7 @@ namespace DualityPlaydate.System
             }
         }
 
-        void UpdateTransform(ref Transform transform, in Movement movement)
+        void UpdateTransform(ref Transform transform, in SideScrollingMovement movement)
         {
             if (movement.Velocity.X > 0.1 || movement.Velocity.X < -0.1)
                 transform.Position.X += movement.Velocity.X;
