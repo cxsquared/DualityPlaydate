@@ -32,15 +32,24 @@ namespace DualityPlaydate.System
             if (camera.Position == transform.Position)
                 return;
 
-            camera.Position.Y = transform.Position.Y;
+            if (camera.Position.Y < transform.Position.Y)
+            {
+                camera.Position.Y -= ((camera.Position.Y - transform.Position.Y) * camera.FollowDampening);
+            }
+            else
+            {
+                camera.Position.Y += ((camera.Position.Y - transform.Position.Y) * -camera.FollowDampening);
+            }
 
             if (camera.Position.X < transform.Position.X)
             {
                 camera.Position.X -= ((camera.Position.X - transform.Position.X) * camera.FollowDampening);
-                return;
+            }
+            else
+            {
+                camera.Position.X += ((camera.Position.X - transform.Position.X) * -camera.FollowDampening);
             }
 
-            camera.Position.X += ((camera.Position.X - transform.Position.X) * -camera.FollowDampening);
         }
     }
 }

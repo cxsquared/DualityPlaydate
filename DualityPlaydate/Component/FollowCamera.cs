@@ -6,8 +6,7 @@ namespace DualityPlaydate.Component
     {
         public Vector2 Position;
         public Vector2 Offset;
-        public int MaxWorldX;
-        public int MinWorldX;
+        public Rectangle WorldBounds;
         public float FollowDampening;
         public float Zoom;
 
@@ -18,8 +17,7 @@ namespace DualityPlaydate.Component
         {
             Position = Vector2.Zero;
             Offset = new Vector2(screenWidth / 2, screenHeight / 2);
-            MaxWorldX = 1000;
-            MinWorldX = 0;
+            WorldBounds = new Rectangle(0, 0, 1000, 1000);
             FollowDampening = 0.05f;
             Zoom = 1;
         }

@@ -11,6 +11,7 @@ namespace DualityPlaydate.System
     public sealed class DrawSystem : AEntitySetSystem<SpriteBatch>
     {
         Vector2 DrawLocation = Vector2.Zero;
+        FollowCamera Camera;
 
         public DrawSystem(World world)
             : base(world)
@@ -24,12 +25,12 @@ namespace DualityPlaydate.System
             var zoomLevel = 1.0f;
             if (cameraEntity.Has<FollowCamera>())
             {
-                var camera = cameraEntity.Get<FollowCamera>();
-                DrawLocation.X = MathHelper.Clamp(camera.Position.X - (camera.Offset.X / camera.Zoom), camera.MinWorldX, camera.MaxWorldX);
-                DrawLocation.Y = camera.Position.Y - (camera.Offset.Y / camera.Zoom);
-                zoomLevel = camera.Zoom;
+                Camera = cameraEntity.Get<FollowCamera>();
+                DrawLocation.X = MathHelper.Clamp(Camera.Position.X - (Camera.Offset.X / Camera.Zoom), Camera.WorldBounds.X, Camera.WorldBounds.Width);
+                DrawLocation.Y = MathHelper.Clamp(Camera.Position.Y - (Camera.Offset.Y / Camera.Zoom), Camera.WorldBounds.Y, Camera.WorldBounds.Height);
+                zoomLevel = Camera.Zoom;
             }
-            batch.Begin(SpriteSortMode.FrontToBack,
+            batch.Begin(SpriteSortMode.BackToFront,
                 BlendState.AlphaBlend,
                 SamplerState.PointClamp,
                 DepthStencilState.Default,
@@ -43,8 +44,16 @@ namespace DualityPlaydate.System
             ref var trans = ref entity.Get<Transform>();
             ref var drawInfo = ref entity.Get<DrawInfo>();
 
+            var targetDrawLocation = trans.Position - DrawLocation;
+
+            if (targetDrawLocation.X < -Camera.Offset.X / Camera.Zoom / 2 || targetDrawLocation.X > Camera.Offset.X / Camera.Zoom * 2.5)
+                return;
+
+            if (targetDrawLocation.Y < -Camera.Offset.Y / Camera.Zoom / 2 || targetDrawLocation.Y > Camera.Offset.Y / Camera.Zoom * 2.5)
+                return;
+
             batch.Draw(drawInfo.Texture,
-                trans.Position - DrawLocation,
+                targetDrawLocation,
                 drawInfo.SourceLocation,
                 drawInfo.Color,
                 trans.Rotation,

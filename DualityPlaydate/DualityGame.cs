@@ -8,6 +8,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
+using System.Diagnostics;
 
 namespace DualityPlaydate
 {
@@ -24,6 +25,11 @@ namespace DualityPlaydate
 
         private Entity _snowman;
         private Entity _runner;
+
+        private int _frameCount;
+        private string _fps = string.Empty;
+        private readonly Stopwatch _watch;
+        private SpriteFont _font;
 
         private SpriteBatch _batch;
         private SpriteBatch Batch
@@ -54,13 +60,14 @@ namespace DualityPlaydate
             GraphicsDevice.BlendState = BlendState.AlphaBlend;
             Content.RootDirectory = "Content";
 
+
             _world = new World();
             _textureResourceManager = new TextureResourceManager(GraphicsDevice, new TextureLoader(Content));
             _map = _world.CreateEntity();
             _map.Set(new Map
             {
-                Width = 64,
-                Height = 64,
+                Width = 256,
+                Height = 256,
             });
 
             _drawSystem = new SequentialSystem<SpriteBatch>(
@@ -73,13 +80,15 @@ namespace DualityPlaydate
                 new RunnerAnimationSystem(_world),
                 new AnimationSystem(_world));
 
-            //Create2dWorld();
+            Create2dWorld();
             CreateTiles(_map.Get<Map>());
+
+            _watch = Stopwatch.StartNew();
         }
 
         protected override void Initialize()
         {
-            //Initialize2dWorld();
+            Initialize2dWorld();
             InitializeTiles(_map.Get<Map>());
 
             base.Initialize();
@@ -91,7 +100,9 @@ namespace DualityPlaydate
 
             _textureResourceManager.Manage(_world);
 
-            //Load2dWorldContent();
+            _font = Content.Load<SpriteFont>("font");
+
+            Load2dWorldContent();
             LoadTilesContent();
 
             base.LoadContent();
@@ -112,6 +123,18 @@ namespace DualityPlaydate
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
             _drawSystem.Update(Batch);
+
+            ++_frameCount;
+            if (_watch.Elapsed.TotalSeconds > .5)
+            {
+                _fps = (_frameCount / _watch.Elapsed.TotalSeconds).ToString();
+                _frameCount = 0;
+                _watch.Restart();
+            }
+
+            _batch.Begin();
+            _batch.DrawString(_font, _fps, new Vector2(10, 10), Color.Black);
+            _batch.End();
 
             base.Draw(gameTime);
         }
@@ -136,7 +159,7 @@ namespace DualityPlaydate
 
         void InitializeTiles(Map map)
         {
-            var noise = NoiseUtils.GenerateMapNoice(map.Width, map.Height, 0);
+            var noise = NoiseUtils.GenerateMapNoice(map.Width, map.Height, 3, 0);
             for (var i = 0; i < _tiles.Length; i++)
             {
                 ref var tile = ref _tiles[i];
@@ -162,49 +185,66 @@ namespace DualityPlaydate
 
         static TileType TileTypeFromNoise(float noise)
         {
-            if (noise > 0.9)
-                return TileType.Ocean;
-
-            if (noise > 0.8)
+            if (noise > 0.85)
                 return TileType.Mountain;
 
-            if (noise > 0.7)
+            if (noise > 0.75)
                 return TileType.Desert;
 
-            if (noise > 0.4)
+            if (noise > 0.6)
                 return TileType.Forest;
 
-            return TileType.Plain;
+            if (noise > 0.25)
+                return TileType.Plain;
+
+            return TileType.Ocean;
         }
 
         void LoadTilesContent()
         {
+            var planesEntity = _world.CreateEntity();
+            planesEntity.Set(new DrawInfo(null, Color.White, new Rectangle(0, 0, 32, 32), new Vector2(0, 0), .1f));
+
+            var forestEntity = _world.CreateEntity();
+            forestEntity.Set(new DrawInfo(null, Color.White, new Rectangle(32, 0, 32, 32), new Vector2(0, 0), .1f));
+
+            var desertEntity = _world.CreateEntity();
+            desertEntity.Set(new DrawInfo(null, Color.White, new Rectangle(64, 0, 32, 32), new Vector2(0, 0), .1f));
+
+            var mountainEntity = _world.CreateEntity();
+            mountainEntity.Set(new DrawInfo(null, Color.White, new Rectangle(0, 32, 32, 32), new Vector2(0, 0), .1f));
+
+            var oceanEntity = _world.CreateEntity();
+            oceanEntity.Set(new DrawInfo(null, Color.White, new Rectangle(32, 32, 32, 32), new Vector2(0, 0), .1f));
+
             for (var i = 0; i < _tiles.Length; i++)
             {
                 ref var tile = ref _tiles[i];
                 ref var tileData = ref tile.Get<Tile>();
 
-                tile.Set(new DrawInfo(null, Color.White, TileTextureLocationFromType(tileData.Type), new Vector2(0, 0)));
+                switch (tileData.Type)
+                {
+                    case TileType.Plain:
+                        tile.SetSameAs<DrawInfo>(planesEntity);
+                        break;
+                    case TileType.Forest:
+                        tile.SetSameAs<DrawInfo>(forestEntity);
+                        break;
+                    case TileType.Desert:
+                        tile.SetSameAs<DrawInfo>(desertEntity);
+                        break;
+                    case TileType.Mountain:
+                        tile.SetSameAs<DrawInfo>(mountainEntity);
+                        break;
+                    case TileType.Ocean:
+                        tile.SetSameAs<DrawInfo>(oceanEntity);
+                        break;
+                    default:
+                        tile.SetSameAs<DrawInfo>(planesEntity);
+                        break;
+                }
                 tile.Set(new ManagedResource<string, Texture2D>("tiledSprites2"));
             }
-        }
-
-        readonly Rectangle PlainsRect = new Rectangle(0, 0, 32, 32);
-        readonly Rectangle ForestRect = new Rectangle(32, 0, 32, 32);
-        readonly Rectangle DesertRect = new Rectangle(64, 0, 32, 32);
-        readonly Rectangle MountainRect = new Rectangle(0, 32, 32, 32);
-        readonly Rectangle OceanRect = new Rectangle(32, 32, 32, 32);
-        Rectangle TileTextureLocationFromType(TileType type)
-        {
-            return type switch
-            {
-                (TileType.Plain) => PlainsRect,
-                (TileType.Forest) => ForestRect,
-                (TileType.Desert) => DesertRect,
-                (TileType.Mountain) => MountainRect,
-                (TileType.Ocean) => OceanRect,
-                _ => PlainsRect,
-            };
         }
 
         void Create2dWorld()
@@ -219,13 +259,13 @@ namespace DualityPlaydate
                 new Vector2(500, 500),
                 0,
                 1));
-            _snowman.Set(new DrawInfo(null, Color.Plum, new Rectangle(0, 128, 256, 256), new Vector2(128, 192)));
+            _snowman.Set(new DrawInfo(null, Color.Plum, new Rectangle(0, 128, 256, 256), new Vector2(128, 192), 0));
 
             _runner.Set(new Transform(
                 new Vector2(200, 200),
                 0,
                 1));
-            _runner.Set(new DrawInfo(null, Color.White, new Rectangle(0, 0, 128, 128), Vector2.Zero));
+            _runner.Set(new DrawInfo(null, Color.White, new Rectangle(0, 0, 128, 128), Vector2.Zero, 0));
             _runner.Set(new PlayerControlled
             {
                 PadIndex = PlayerIndex.One

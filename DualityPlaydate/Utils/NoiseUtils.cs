@@ -4,11 +4,11 @@ namespace DualityPlaydate.Utils
 {
     static class NoiseUtils
     {
-        public static float[] GenerateMapNoice(int width, int height, int seed)
+        public static float[] GenerateMapNoice(int width, int height, int ocataves, int seed)
         {
             var whiteNoise = GenerateWhiteNoise(width, height, seed);
-            var smoothNoise = GenerateSmoothNoise(whiteNoise, width, height, 2);
-            return GeneratePerlinNoise(smoothNoise, width, height, 2);
+            var smoothNoise = GenerateSmoothNoise(whiteNoise, width, height, ocataves);
+            return GeneratePerlinNoise(smoothNoise, width, height, ocataves);
         }
 
         public static float[] GenerateWhiteNoise(int width, int height, int seed)

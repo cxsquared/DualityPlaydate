@@ -29,6 +29,9 @@
     <None Update="Content\circle.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="Content\font.xnb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Content\map01.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
