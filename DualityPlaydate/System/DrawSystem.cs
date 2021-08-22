@@ -21,13 +21,21 @@ namespace DualityPlaydate.System
         {
             // Probably do this at run time and trigger a changed only when the component changes
             var cameraEntity = World.GetEntities().With<FollowCamera>().AsEnumerable().FirstOrDefault();
-            if (cameraEntity != null)
+            var zoomLevel = 1.0f;
+            if (cameraEntity.Has<FollowCamera>())
             {
                 var camera = cameraEntity.Get<FollowCamera>();
-                DrawLocation.X = MathHelper.Clamp(camera.Position.X - camera.Offset.X, camera.MinWorldX, camera.MaxWorldX);
-                DrawLocation.Y = camera.Position.Y - camera.Offset.Y;
+                DrawLocation.X = MathHelper.Clamp(camera.Position.X - (camera.Offset.X / camera.Zoom), camera.MinWorldX, camera.MaxWorldX);
+                DrawLocation.Y = camera.Position.Y - (camera.Offset.Y / camera.Zoom);
+                zoomLevel = camera.Zoom;
             }
-            batch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend);
+            batch.Begin(SpriteSortMode.FrontToBack,
+                BlendState.AlphaBlend,
+                SamplerState.PointClamp,
+                DepthStencilState.Default,
+                RasterizerState.CullNone,
+                null,
+                Matrix.CreateScale(zoomLevel));
         }
 
         protected override void Update(SpriteBatch batch, in Entity entity)

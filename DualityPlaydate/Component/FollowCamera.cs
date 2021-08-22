@@ -9,6 +9,7 @@ namespace DualityPlaydate.Component
         public int MaxWorldX;
         public int MinWorldX;
         public float FollowDampening;
+        public float Zoom;
 
         // This follows the transform of what ever entity it's on
         // If the entity doesn't have a transform this camera won't change from
@@ -20,6 +21,7 @@ namespace DualityPlaydate.Component
             MaxWorldX = 1000;
             MinWorldX = 0;
             FollowDampening = 0.05f;
+            Zoom = 1;
         }
     }
 }

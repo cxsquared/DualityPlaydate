@@ -6,6 +6,7 @@ using DualityPlaydate.System;
 using DualityPlaydate.Utils;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using System;
 
 namespace DualityPlaydate
@@ -55,15 +56,14 @@ namespace DualityPlaydate
             _runner = _world.CreateEntity();
 
             _drawSystem = new SequentialSystem<SpriteBatch>(
+                new FollowCameraSystem(_world),
                 new DrawSystem(_world));
 
             _updateSystem = new SequentialSystem<float>(
                 new PlayerControlledSystem(_world),
                 new MovementSystem(_world),
-                new FollowCameraSystem(_world),
                 new RunnerAnimationSystem(_world),
                 new AnimationSystem(_world));
-
         }
 
         protected override void Initialize()
@@ -105,6 +105,9 @@ namespace DualityPlaydate
 
         protected override void Update(GameTime gameTime)
         {
+            if (Keyboard.GetState().IsKeyDown(Keys.Escape))
+                Exit();
+
             _updateSystem.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
 
             base.Update(gameTime);
