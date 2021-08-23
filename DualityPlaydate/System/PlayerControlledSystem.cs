@@ -29,6 +29,8 @@ namespace DualityPlaydate.System
 
             inputs.Left = IsLeftPressed(currentKeyState, currentPadState);
             inputs.Right = IsRightPressed(currentKeyState, currentPadState);
+            inputs.Up = IsUpPressed(currentKeyState, currentPadState);
+            inputs.Down = IsDownPressed(currentKeyState, currentPadState);
         }
 
         static bool IsLeftPressed(KeyboardState keyState, GamePadState gamePadState)
@@ -50,6 +52,30 @@ namespace DualityPlaydate.System
             if (gamePadState.IsConnected)
             {
                 padPressed = gamePadState.IsButtonDown(Buttons.DPadRight) || gamePadState.IsButtonDown(Buttons.RightThumbstickRight);
+            }
+
+            return keysPressed || padPressed;
+        }
+
+        static bool IsUpPressed(KeyboardState keyState, GamePadState gamePadState)
+        {
+            var keysPressed = keyState.IsKeyDown(Keys.W) || keyState.IsKeyDown(Keys.Up);
+            var padPressed = false;
+            if (gamePadState.IsConnected)
+            {
+                padPressed = gamePadState.IsButtonDown(Buttons.DPadUp) || gamePadState.IsButtonDown(Buttons.RightThumbstickUp);
+            }
+
+            return keysPressed || padPressed;
+        }
+
+        static bool IsDownPressed(KeyboardState keyState, GamePadState gamePadState)
+        {
+            var keysPressed = keyState.IsKeyDown(Keys.S) || keyState.IsKeyDown(Keys.Down);
+            var padPressed = false;
+            if (gamePadState.IsConnected)
+            {
+                padPressed = gamePadState.IsButtonDown(Buttons.DPadDown) || gamePadState.IsButtonDown(Buttons.RightThumbstickDown);
             }
 
             return keysPressed || padPressed;

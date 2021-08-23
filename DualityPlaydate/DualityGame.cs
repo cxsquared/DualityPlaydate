@@ -22,6 +22,7 @@ namespace DualityPlaydate
 
         private readonly Entity _map;
         private Entity[] _tiles;
+        private Entity _tank;
 
         private Entity _snowman;
         private Entity _runner;
@@ -77,10 +78,11 @@ namespace DualityPlaydate
             _updateSystem = new SequentialSystem<float>(
                 new PlayerControlledSystem(_world),
                 new SideScrollingMovementSystem(_world),
+                new TankTopDownMovementSystem(_world),
                 new RunnerAnimationSystem(_world),
                 new AnimationSystem(_world));
 
-            Create2dWorld();
+            //Create2dWorld();
             CreateTiles(_map.Get<Map>());
 
             _watch = Stopwatch.StartNew();
@@ -88,7 +90,7 @@ namespace DualityPlaydate
 
         protected override void Initialize()
         {
-            Initialize2dWorld();
+            //Initialize2dWorld();
             InitializeTiles(_map.Get<Map>());
 
             base.Initialize();
@@ -102,7 +104,7 @@ namespace DualityPlaydate
 
             _font = Content.Load<SpriteFont>("font");
 
-            Load2dWorldContent();
+            //Load2dWorldContent();
             LoadTilesContent();
 
             base.LoadContent();
@@ -133,7 +135,7 @@ namespace DualityPlaydate
             }
 
             _batch.Begin();
-            _batch.DrawString(_font, _fps, new Vector2(10, 10), Color.Black);
+            _batch.DrawString(_font, _fps, new Vector2(10, 10), Color.Pink);
             _batch.End();
 
             base.Draw(gameTime);
@@ -150,6 +152,7 @@ namespace DualityPlaydate
 
         void CreateTiles(Map map)
         {
+            _tank = _world.CreateEntity();
             _tiles = new Entity[map.Height * map.Width];
             for (var i = 0; i < _tiles.Length; i++)
             {
@@ -159,6 +162,23 @@ namespace DualityPlaydate
 
         void InitializeTiles(Map map)
         {
+            _tank.Set(new Transform(
+                new Vector2(200, 200),
+                0,
+                1));
+            _tank.Set(new DrawInfo(null, Color.White, new Rectangle(64, 32, 32, 32), new Vector2(16, 16), 0));
+            _tank.Set(new PlayerControlled
+            {
+                PadIndex = PlayerIndex.One
+            });
+            _tank.Set(new Inputs());
+            _tank.Set(new TankTopDownMovement
+            {
+                RotationRate = 1,
+                MaxVelocity = 50
+            });
+            _tank.Set(new FollowCamera(_deviceManager.PreferredBackBufferWidth, _deviceManager.PreferredBackBufferHeight));
+
             var noise = NoiseUtils.GenerateMapNoice(map.Width, map.Height, 3, 0);
             for (var i = 0; i < _tiles.Length; i++)
             {
@@ -202,6 +222,8 @@ namespace DualityPlaydate
 
         void LoadTilesContent()
         {
+            _tank.Set(new ManagedResource<string, Texture2D>("tiledSprites2"));
+
             var planesEntity = _world.CreateEntity();
             planesEntity.Set(new DrawInfo(null, Color.White, new Rectangle(0, 0, 32, 32), new Vector2(0, 0), .1f));
 

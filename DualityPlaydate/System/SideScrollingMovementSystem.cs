@@ -19,13 +19,16 @@ namespace DualityPlaydate.System
             ref var movement = ref entity.Get<SideScrollingMovement>();
             ref readonly var input = ref entity.Get<Inputs>();
 
+
             if (!HasMovementInput(in input))
             {
                 ApplyFriction(ref movement, frameDelta);
-                return;
+            }
+            else
+            {
+                ApplyVelocity(ref movement, in input, frameDelta);
             }
 
-            ApplyVelocity(ref movement, in input, frameDelta);
             UpdateTransform(ref trans, in movement);
         }
 
