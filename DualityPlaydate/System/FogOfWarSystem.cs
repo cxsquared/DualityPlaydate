@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using DefaultEcs;
 using DefaultEcs.System;
 using DualityPlaydate.Component;
@@ -12,50 +10,54 @@ namespace DualityPlaydate.System
     [With(typeof(Tile), typeof(DrawInfo))]
     class FogOfWarSystem : AEntitySetSystem<float>
     {
-        Vector2 DrawLocation = Vector2.Zero;
-        FollowCamera Camera;
-        List<Entity> TilesToCheck = new();
-        HashSet<Tile> TilesChecked = new();
-        readonly int ScreenWidth;
-        readonly int ScreenHeight;
-        float PreviousZoom;
+        List<Entity> VisibleTiles = new();
+        bool playerTileSet = false;
+        Entity CurrentPlayerTile;
+        bool firstRun = true; // this is bad
 
-        public FogOfWarSystem(World _world, int screenWidth, int screenHeight)
+        readonly Transform Player;
+        readonly FollowCamera Camera;
+        readonly Map Map;
+
+        public FogOfWarSystem(World _world, in Transform player, in FollowCamera camera, in Map map)
             : base(_world)
         {
-            ScreenHeight = screenHeight;
-            ScreenWidth = screenWidth;
+            Player = player;
+            Camera = camera;
+            Map = map;
         }
 
         protected override void PreUpdate(float state)
         {
-            Camera = World.GetEntities().With<FollowCamera>().AsEnumerable().FirstOrDefault().Get<FollowCamera>();
-
-            TilesToCheck.Clear();
-            TilesChecked.Clear();
-
-            CameraUtils.SetDrawLocation(Camera, ref DrawLocation);
-
-            if (Camera.Zoom != PreviousZoom)
-            {
-                PreviousZoom = Camera.Zoom;
-            }
+            VisibleTiles.Clear();
+            playerTileSet = false;
         }
 
         protected override void Update(float state, in Entity entity)
         {
-            ref var tile = ref entity.Get<Tile>();
             ref var transform = ref entity.Get<Transform>();
             ref var drawInfo = ref entity.Get<DrawInfo>();
-            if (!CameraUtils.IsOnScreen(transform.Position - DrawLocation, drawInfo.SourceLocation.Width, drawInfo.SourceLocation.Height, in Camera))
+
+            if (!CameraUtils.IsOnScreen(transform.Position, drawInfo.SourceLocation.Width, drawInfo.SourceLocation.Height, in Camera))
                 return;
 
-            drawInfo.Visible = false;
-            TilesToCheck.Add(entity);
+            VisibleTiles.Add(entity);
+
+            if (!playerTileSet
+                && IsInside(new Vector2(Player.Position.X + 16, Player.Position.Y + 16), transform, drawInfo))
+            {
+                CurrentPlayerTile = entity;
+                drawInfo.Visible = true;
+                playerTileSet = true;
+            }
         }
 
         protected override void PostUpdate(float state)
         {
+            firstRun = false;
+
+            var center = Player.Position; // TODO: Make this use player width/height offset
+            /*
             var center = new Point((int)Camera.Position.X, (int)Camera.Position.Y);
             var distance = 64 / Camera.Zoom;
 
@@ -83,23 +85,17 @@ namespace DualityPlaydate.System
                     drawInfo.Visible = true;
                 }
             }
+            */
         }
 
-        Entity GetTileAtWorldCoord(int x, int y)
+        bool IsInside(in Vector2 point,
+            in Transform bTransform, in DrawInfo bDrawInfo)
         {
-            return TilesToCheck.FirstOrDefault(e =>
-            {
-                var transform = e.Get<Transform>();
-                return transform.Position.X < x &&
-                transform.Position.X + 32 / Camera.Zoom > x &&
-                transform.Position.Y < y &&
-                transform.Position.Y + 32 / Camera.Zoom > y;
-            });
-        }
+            // This ignores scale
+            var bBounds = new Rectangle((int)bTransform.Position.X, (int)bTransform.Position.Y,
+                bDrawInfo.SourceLocation.Width, bDrawInfo.SourceLocation.Height);
 
-        static bool IsTileSolid(in Tile tile)
-        {
-            return tile.Type == TileType.Mountain;
+            return bBounds.Contains((int)point.X, (int)point.Y);
         }
     }
 }

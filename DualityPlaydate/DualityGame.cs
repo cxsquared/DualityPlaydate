@@ -9,6 +9,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Diagnostics;
+using System.Linq;
 
 namespace DualityPlaydate
 {
@@ -19,6 +20,7 @@ namespace DualityPlaydate
         private readonly TextureResourceManager _textureResourceManager;
         private readonly ISystem<SpriteBatch> _drawSystem;
         private readonly ISystem<float> _updateSystem;
+        private ISystem<float> _fogSystem;
 
         private readonly Entity _map;
         private Entity[] _tiles;
@@ -61,7 +63,6 @@ namespace DualityPlaydate
             GraphicsDevice.BlendState = BlendState.AlphaBlend;
             Content.RootDirectory = "Content";
 
-
             _world = new World();
             _textureResourceManager = new TextureResourceManager(GraphicsDevice, new TextureLoader(Content));
             _map = _world.CreateEntity();
@@ -75,24 +76,25 @@ namespace DualityPlaydate
                 new FollowCameraSystem(_world),
                 new DrawSystem(_world));
 
-            _updateSystem = new SequentialSystem<float>(
-                new PlayerControlledSystem(_world),
-                new SideScrollingMovementSystem(_world),
-                new TankTopDownMovementSystem(_world),
-                new RunnerAnimationSystem(_world),
-                new AnimationSystem(_world),
-                new FogOfWarSystem(_world, 800, 600));
-
             //Create2dWorld();
             CreateTiles(_map.Get<Map>());
 
             _watch = Stopwatch.StartNew();
+
+            _updateSystem = new SequentialSystem<float>(
+                 new PlayerControlledSystem(_world),
+                 new SideScrollingMovementSystem(_world),
+                 new TankTopDownMovementSystem(_world),
+                 new RunnerAnimationSystem(_world),
+                 new AnimationSystem(_world));
         }
 
         protected override void Initialize()
         {
             //Initialize2dWorld();
             InitializeTiles(_map.Get<Map>());
+
+            _fogSystem = new FogOfWarSystem(_world, in _tank.Get<Transform>(), in _tank.Get<FollowCamera>(), in _map.Get<Map>());
 
             base.Initialize();
         }
@@ -117,6 +119,7 @@ namespace DualityPlaydate
                 Exit();
 
             _updateSystem.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
+            _fogSystem.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
 
             base.Update(gameTime);
         }

@@ -8,16 +8,11 @@ namespace DualityPlaydate.Utils
         public static bool IsOnScreen(Vector2 worldLocation, int width, int height, in FollowCamera camera)
         {
             var bounds = ScreenBoundsInWorldCoords(camera);
+
             return worldLocation.X + width / camera.Zoom > bounds.X &&
                 worldLocation.X - width / camera.Zoom < bounds.X + bounds.Width &&
                 worldLocation.Y + height / camera.Zoom > bounds.Y &&
                 worldLocation.Y - height / camera.Zoom < bounds.Y + bounds.Height;
-            /*
-            return !(position.X + bounds. < -camera.Offset.X / camera.Zoom / 2 ||
-                position.X > camera.Offset.X / camera.Zoom * 2 ||
-                position.Y < -camera.Offset.Y / camera.Zoom / 2 ||
-                position.Y > camera.Offset.Y / camera.Zoom * 2);
-            */
         }
 
         public static Rectangle ScreenBoundsInWorldCoords(in FollowCamera camera)
@@ -35,12 +30,13 @@ namespace DualityPlaydate.Utils
             return returnRect;
         }
 
-        public static Vector2 SetDrawLocation(FollowCamera camera, ref Vector2 drawLocation)
+        public static Vector2 GetDrawLocation(FollowCamera camera)
         {
-            drawLocation.X = MathHelper.Clamp(camera.Position.X - (camera.Offset.X / camera.Zoom), camera.WorldBounds.X, camera.WorldBounds.Width);
-            drawLocation.Y = MathHelper.Clamp(camera.Position.Y - (camera.Offset.Y / camera.Zoom), camera.WorldBounds.Y, camera.WorldBounds.Height);
-
-            return drawLocation;
+            return new Vector2
+            {
+                X = MathHelper.Clamp(camera.Position.X - (camera.Offset.X / camera.Zoom), camera.WorldBounds.X, camera.WorldBounds.Width),
+                Y = MathHelper.Clamp(camera.Position.Y - (camera.Offset.Y / camera.Zoom), camera.WorldBounds.Y, camera.WorldBounds.Height)
+            };
         }
     }
 }
