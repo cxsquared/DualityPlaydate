@@ -11,9 +11,11 @@ namespace DualityPlaydate.Component
         public Vector2 SourceOrigin;
         public bool Flip;
         public float ZIndex;
+        public bool Visible;
 
         public DrawInfo(Texture2D texture, Color color, Rectangle locaiton, Vector2 origin, float zindex)
         {
+            Visible = true;
             Flip = false;
             Texture = texture;
             Color = color;

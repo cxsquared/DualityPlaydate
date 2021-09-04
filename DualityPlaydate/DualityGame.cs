@@ -80,7 +80,8 @@ namespace DualityPlaydate
                 new SideScrollingMovementSystem(_world),
                 new TankTopDownMovementSystem(_world),
                 new RunnerAnimationSystem(_world),
-                new AnimationSystem(_world));
+                new AnimationSystem(_world),
+                new FogOfWarSystem(_world, 800, 600));
 
             //Create2dWorld();
             CreateTiles(_map.Get<Map>());
