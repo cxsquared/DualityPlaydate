@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using DefaultEcs;
 using DefaultEcs.System;
 using DualityPlaydate.Component;
@@ -8,55 +9,68 @@ using Microsoft.Xna.Framework;
 namespace DualityPlaydate.System
 {
     [With(typeof(Tile), typeof(DrawInfo))]
-    class FogOfWarSystem : AEntitySetSystem<float>
+    class FogOfWarSystem : AEntitySetSystem<Entity>
     {
-        List<Entity> VisibleTiles = new();
+        public int Distance { get; set; } = 5;
+
         bool playerTileSet = false;
         Entity CurrentPlayerTile;
-        bool firstRun = true; // this is bad
+        int MapSize;
 
-        readonly Transform Player;
-        readonly FollowCamera Camera;
-        readonly Map Map;
+        readonly Entity[] Tiles;
+        Transform Player;
+        FollowCamera Camera;
 
-        public FogOfWarSystem(World _world, in Transform player, in FollowCamera camera, in Map map)
+        public FogOfWarSystem(World _world, in Entity[] tiles, int mapSize)
             : base(_world)
         {
-            Player = player;
-            Camera = camera;
-            Map = map;
+            Tiles = tiles;
+            MapSize = mapSize;
         }
 
-        protected override void PreUpdate(float state)
+        protected override void PreUpdate(Entity state)
         {
-            VisibleTiles.Clear();
             playerTileSet = false;
+            Player = state.Get<Transform>();
+            Camera = state.Get<FollowCamera>();
         }
 
-        protected override void Update(float state, in Entity entity)
+        protected override void Update(Entity state, in Entity entity)
         {
             ref var transform = ref entity.Get<Transform>();
             ref var drawInfo = ref entity.Get<DrawInfo>();
 
-            if (!CameraUtils.IsOnScreen(transform.Position, drawInfo.SourceLocation.Width, drawInfo.SourceLocation.Height, in Camera))
+            if (!CameraUtils.IsOnScreen(transform.Position, drawInfo.SourceLocation.Width, drawInfo.SourceLocation.Height, Camera))
                 return;
 
-            VisibleTiles.Add(entity);
-
             if (!playerTileSet
-                && IsInside(new Vector2(Player.Position.X + 16, Player.Position.Y + 16), transform, drawInfo))
+                && IsInside(new Vector2(Player.Position.X, Player.Position.Y), transform, drawInfo))
             {
                 CurrentPlayerTile = entity;
-                drawInfo.Visible = true;
+                transform.IsVisible = true;
                 playerTileSet = true;
             }
         }
 
-        protected override void PostUpdate(float state)
+        protected override void PostUpdate(Entity state)
         {
-            firstRun = false;
+            var startingTile = CurrentPlayerTile.Get<Tile>();
+            var centerX = startingTile.MapX;
+            var centerY = startingTile.MapY;
 
-            var center = Player.Position; // TODO: Make this use player width/height offset
+            for(int y = -Distance; y < Distance; y++)
+                for(int x = -Distance; x < Distance; x++)
+                {
+                    var index = (centerY + y) * MapSize + (centerX + x);
+                    if (index >= Tiles.Length || index < 0)
+                        continue;
+
+                    var tile = Tiles[index];
+                    ref var t = ref tile.Get<Transform>();
+                    ref var di = ref tile.Get<DrawInfo>();
+                    t.IsVisible = true;
+                }
+
             /*
             var center = new Point((int)Camera.Position.X, (int)Camera.Position.Y);
             var distance = 64 / Camera.Zoom;

@@ -45,7 +45,7 @@ namespace DualityPlaydate.System
             ref var trans = ref entity.Get<Transform>();
             ref var drawInfo = ref entity.Get<DrawInfo>();
 
-            if (!IsVisible(trans.Position, drawInfo))
+            if (!IsVisible(trans, drawInfo))
                 return;
 
             var targetDrawLocation = trans.Position - DrawLocation;
@@ -66,9 +66,9 @@ namespace DualityPlaydate.System
             batch.End();
         }
 
-        bool IsVisible(Vector2 worldLocation, in DrawInfo drawInfo)
+        bool IsVisible(in Transform trans, in DrawInfo drawInfo)
         {
-            return CameraUtils.IsOnScreen(worldLocation, drawInfo.SourceLocation.Width, drawInfo.SourceLocation.Height, Camera) && drawInfo.Visible;
+            return trans.IsVisible && CameraUtils.IsOnScreen(trans.Position, drawInfo.SourceLocation.Width, drawInfo.SourceLocation.Height, Camera);
         }
     }
 }

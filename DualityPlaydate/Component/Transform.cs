@@ -7,12 +7,14 @@ namespace DualityPlaydate.Component
         public Vector2 Position;
         public float Rotation;
         public float Scale;
+        public bool IsVisible;
 
         public Transform(Vector2 position, float rotation, float scale)
         {
             Position = position;
             Rotation = rotation;
             Scale = scale;
+            IsVisible = true;
         }
     }
 }

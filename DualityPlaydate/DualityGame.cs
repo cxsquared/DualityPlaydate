@@ -20,7 +20,7 @@ namespace DualityPlaydate
         private readonly TextureResourceManager _textureResourceManager;
         private readonly ISystem<SpriteBatch> _drawSystem;
         private readonly ISystem<float> _updateSystem;
-        private ISystem<float> _fogSystem;
+        private ISystem<Entity> _fogSystem;
 
         private readonly Entity _map;
         private Entity[] _tiles;
@@ -94,7 +94,7 @@ namespace DualityPlaydate
             //Initialize2dWorld();
             InitializeTiles(_map.Get<Map>());
 
-            _fogSystem = new FogOfWarSystem(_world, in _tank.Get<Transform>(), in _tank.Get<FollowCamera>(), in _map.Get<Map>());
+            _fogSystem = new FogOfWarSystem(_world, _tiles, 256);
 
             base.Initialize();
         }
@@ -119,14 +119,14 @@ namespace DualityPlaydate
                 Exit();
 
             _updateSystem.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
-            _fogSystem.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
+            _fogSystem.Update(_tank);
 
             base.Update(gameTime);
         }
 
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.CornflowerBlue);
+            GraphicsDevice.Clear(Color.Black);
 
             _drawSystem.Update(Batch);
 
@@ -195,7 +195,8 @@ namespace DualityPlaydate
                 tile.Set(new Transform
                 {
                     Position = new Vector2(mapX * 32, mapY * 32),
-                    Scale = 1
+                    Scale = 1,
+                    IsVisible = false
                 });
 
                 tile.Set(new Tile()
